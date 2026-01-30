@@ -76,7 +76,8 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
     nid.uFlags = NIF_ICON | NIF_MESSAGE | NIF_TIP;
     nid.uCallbackMessage = WM_TRAYICON;
     nid.hIcon = LoadIcon(NULL, IDI_APPLICATION);
-    _wcscpy_s(nid.szTip, _countof(nid.szTip), L"Temp Monitor: Init...");
+    // Use the standard wcscpy_s directly for initializing
+    wcscpy_s(nid.szTip, _countof(nid.szTip), L"Temp Monitor: Init...");
     Shell_NotifyIcon(NIM_ADD, &nid);
 
     // 7. Start Timer
@@ -218,8 +219,8 @@ void UpdateTrayTooltip() {
     std::wstring tip = ss.str();
     if (tip.length() >= 127) tip = tip.substr(0, 127);
     
-    // Explicitly use _wcscpy_s to match wchar_t buffer
-    _wcscpy_s(nid.szTip, _countof(nid.szTip), tip.c_str());
+    // Explicitly use the standard wcscpy_s
+    wcscpy_s(nid.szTip, _countof(nid.szTip), tip.c_str());
     Shell_NotifyIcon(NIM_MODIFY, &nid);
 }
 
