@@ -64,6 +64,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
     SetWindowRgn(hOverlayWnd, hRgn, TRUE);
 
     // 6. Setup Tray Icon
+    memset(&nid, 0, sizeof(NOTIFYICONDATA));
     nid.cbSize = sizeof(NOTIFYICONDATA);
     nid.hWnd = hMainWnd;
     nid.uID = ID_TRAY_APP_ICON;
@@ -178,14 +179,17 @@ LRESULT CALLBACK OverlayWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM l
         RECT rect;
         GetClientRect(hWnd, &rect);
         
-        RECT r1 = rect; r1.bottom -= 20;
-        RECT r2 = rect; r2.top += 20;
-        
         std::wstringstream s1; s1 << L"CPU: " << (int)cpuTemp << L" C";
         std::wstringstream s2; s2 << L"GPU: " << (int)gpuTemp << L" C";
         
-        DrawText(hdc, s1.str().c_str(), -1, &r1, DT_CENTER | DT_VCENTER | DT_SINGLELINE);
-        DrawText(hdc, s2.str().c_str(), -1, &r2, DT_CENTER | DT_VCENTER | DT_SINGLELINE);
+        std::wstring ws1 = s1.str();
+        std::wstring ws2 = s2.str();
+        
+        RECT r1 = rect; r1.bottom -= 20;
+        RECT r2 = rect; r2.top += 20;
+        
+        DrawTextW(hdc, ws1.c_str(), -1, &r1, DT_CENTER | DT_VCENTER | DT_SINGLELINE);
+        DrawTextW(hdc, ws2.c_str(), -1, &r2, DT_CENTER | DT_VCENTER | DT_SINGLELINE);
 
         DeleteObject(hFont);
         EndPaint(hWnd, &ps);
@@ -216,13 +220,13 @@ void SetStartup(bool enable) {
     HKEY hKey;
     const wchar_t* czRunPath = L"Software\\Microsoft\\Windows\\CurrentVersion\\Run";
     const wchar_t* czAppName = L"TempMonitor";
-    if (RegOpenKeyEx(HKEY_CURRENT_USER, czRunPath, 0, KEY_WRITE, &hKey) == ERROR_SUCCESS) {
+    if (RegOpenKeyExW(HKEY_CURRENT_USER, czRunPath, 0, KEY_WRITE, &hKey) == ERROR_SUCCESS) {
         if (enable) {
             wchar_t szPath[MAX_PATH];
-            GetModuleFileName(NULL, szPath, MAX_PATH);
-            RegSetValueEx(hKey, czAppName, 0, REG_SZ, (LPBYTE)szPath, (lstrlen(szPath) + 1) * sizeof(wchar_t));
+            GetModuleFileNameW(NULL, szPath, MAX_PATH);
+            RegSetValueExW(hKey, czAppName, 0, REG_SZ, (LPBYTE)szPath, (lstrlenW(szPath) + 1) * sizeof(wchar_t));
         } else {
-            RegDeleteValue(hKey, czAppName);
+            RegDeleteValueW(hKey, czAppName);
         }
         RegCloseKey(hKey);
     }
@@ -232,8 +236,8 @@ bool CheckStartup() {
     HKEY hKey;
     const wchar_t* czRunPath = L"Software\\Microsoft\\Windows\\CurrentVersion\\Run";
     const wchar_t* czAppName = L"TempMonitor";
-    if (RegOpenKeyEx(HKEY_CURRENT_USER, czRunPath, 0, KEY_READ, &hKey) == ERROR_SUCCESS) {
-        bool exists = (RegQueryValueEx(hKey, czAppName, NULL, NULL, NULL, NULL) == ERROR_SUCCESS);
+    if (RegOpenKeyExW(HKEY_CURRENT_USER, czRunPath, 0, KEY_READ, &hKey) == ERROR_SUCCESS) {
+        bool exists = (RegQueryValueExW(hKey, czAppName, NULL, NULL, NULL, NULL) == ERROR_SUCCESS);
         RegCloseKey(hKey);
         return exists;
     }
