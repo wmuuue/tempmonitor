@@ -36,6 +36,11 @@ void SetStartup(bool enable);
 bool CheckStartup();
 
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow) {
+    // Suppress unreferenced parameter warnings
+    (void)hPrevInstance;
+    (void)lpCmdLine;
+    (void)nCmdShow;
+
     hInst = hInstance;
 
     // 1. Initialize Monitor
@@ -212,6 +217,8 @@ void UpdateTrayTooltip() {
     ss << L"CPU: " << (int)cpuTemp << L"C | GPU: " << (int)gpuTemp << L"C";
     std::wstring tip = ss.str();
     if (tip.length() >= 127) tip = tip.substr(0, 127);
+    
+    // Use _tcscpy_s which adapts to UNICODE/ANSI
     _tcscpy_s(nid.szTip, tip.c_str());
     Shell_NotifyIcon(NIM_MODIFY, &nid);
 }
